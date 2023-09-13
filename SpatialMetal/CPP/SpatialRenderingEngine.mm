@@ -76,7 +76,7 @@ public:
         }
 
         cp_frame_timing_t actualTiming = cp_drawable_get_frame_timing(drawable);
-        ar_pose_t pose = createPoseForTiming(actualTiming);
+        ar_pose_t pose = createDeviceAnchor(actualTiming);
         cp_drawable_set_ar_pose(drawable, pose);
 
         _renderer->drawAndPresent(frame, drawable);
@@ -95,7 +95,7 @@ private:
         ar_session_run(_arSession, dataProviders);
     }
 
-    ar_pose_t createPoseForTiming(cp_frame_timing_t timing) {
+    ar_pose_t createDeviceAnchor(cp_frame_timing_t timing) {
         ar_pose_t outPose = ar_pose_create();
         cp_time_t presentationTime = cp_frame_timing_get_presentation_time(timing);
         CFTimeInterval queryTime = cp_time_to_cf_time_interval(presentationTime);

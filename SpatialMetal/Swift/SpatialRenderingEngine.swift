@@ -61,7 +61,7 @@ class SpatialRenderingEngine {
         }
     }
 
-    private func createPoseForTiming(timing: LayerRenderer.Frame.Timing) -> DeviceAnchor? {
+    private func createDeviceAnchor(timing: LayerRenderer.Frame.Timing) -> DeviceAnchor? {
 
         let presentationTime = timing.presentationTime
         let queryTime = presentationTime.toTimeInterval()
@@ -72,7 +72,7 @@ class SpatialRenderingEngine {
         return anchor
 
         func err(_ msg: String) -> DeviceAnchor? {
-            print("⁉️ SpatialRenderingEngine::createPoseForTiming err: \(msg) == nil")
+            print("⁉️ SpatialRenderingEngine::createDeviceAnchor err: \(msg) == nil")
             return nil
         }
     }
@@ -94,7 +94,7 @@ class SpatialRenderingEngine {
         // layerRenderer.wait(until: optimalTime, tolerance: optimalTime)
 
         frame.startSubmission()
-        guard let deviceAnchor = createPoseForTiming(timing: actualTiming) else { return err("createPoseForTiming") }
+        guard let deviceAnchor = createDeviceAnchor(timing: actualTiming) else { return err("createDeviceAnchor") }
         drawable.deviceAnchor = deviceAnchor
 
         renderer.drawAndPresent(frame: frame, drawable: drawable)
