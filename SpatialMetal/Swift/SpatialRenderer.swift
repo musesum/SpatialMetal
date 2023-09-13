@@ -200,8 +200,8 @@ class SpatialRenderer {
 
     func poseConstantsForViewIndex(drawable: LayerRenderer.Drawable, index: Int) -> PoseConstants {
         var outPose = PoseConstants(projectionMatrix: float4x4(), viewMatrix: float4x4())
-        guard let arPose = drawable.pose else { err("arPose == nil"); return outPose}
-        let poseTransform = arPose.originFromDeviceTransform
+        guard let deviceAnchor = drawable.deviceAnchor else { err("deviceAnchor == nil"); return outPose}
+        let poseTransform = deviceAnchor.originFromAnchorTransform
 
         let view = drawable.views[index]
         let tangents = view.tangents

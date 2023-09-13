@@ -61,17 +61,17 @@ class SpatialRenderingEngine {
         }
     }
 
-    private func createPoseForTiming(timing: LayerRenderer.Frame.Timing) -> Pose? {
+    private func createPoseForTiming(timing: LayerRenderer.Frame.Timing) -> DeviceAnchor? {
 
         let presentationTime = timing.presentationTime
         let queryTime = presentationTime.toTimeInterval()
 
-        guard let outPose = worldTracking.queryPose(atTimestamp: queryTime) else {
-            return err("outPose")
+        guard let anchor = worldTracking.queryDeviceAnchor(atTimestamp: queryTime) else {
+            return err("anchor")
         }
-        return outPose
+        return anchor
 
-        func err(_ msg: String) -> Pose? {
+        func err(_ msg: String) -> DeviceAnchor? {
             print("⁉️ SpatialRenderingEngine::createPoseForTiming err: \(msg) == nil")
             return nil
         }
@@ -94,8 +94,8 @@ class SpatialRenderingEngine {
         // layerRenderer.wait(until: optimalTime, tolerance: optimalTime)
 
         frame.startSubmission()
-        guard let pose = createPoseForTiming(timing: actualTiming) else { return err("createPoseForTiming") }
-        drawable.pose = pose
+        guard let deviceAnchor = createPoseForTiming(timing: actualTiming) else { return err("createPoseForTiming") }
+        drawable.deviceAnchor = deviceAnchor
 
         renderer.drawAndPresent(frame: frame, drawable: drawable)
         frame.endSubmission()
@@ -131,6 +131,7 @@ class RenderThread: Thread {
 public func SpatialRenderer_InitAndRun(_ layerRenderer: LayerRenderer,
                                        _ arSession: ARKitSession,
                                        _ worldTracking: WorldTrackingProvider) {
+
     let renderThread = RenderThread(layerRenderer, arSession, worldTracking)
     renderThread.name = "Spatial Renderer Thread"
     renderThread.start()
