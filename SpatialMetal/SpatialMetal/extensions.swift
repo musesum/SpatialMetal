@@ -3,7 +3,7 @@
 //
 //  Created by musesum on 8/8/23.
 
-import Foundation
+import CompositorServices
 
 extension LayerRenderer.Clock.Instant {
     func toTimeInterval() -> TimeInterval {

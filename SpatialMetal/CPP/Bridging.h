@@ -1,1 +1,0 @@
-#include "SpatialRenderingEngine.h"

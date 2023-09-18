@@ -25,7 +25,7 @@ struct EnvironmentConstants {
 };
 
 [[vertex]]
-VertexOut vertex_environment(VertexIn in [[stage_in]],
+VertexOut vertex_stars(VertexIn in [[stage_in]],
                              constant PoseConstants &pose [[buffer(1)]],
                              constant EnvironmentConstants &environment [[buffer(2)]])
 {
@@ -45,7 +45,7 @@ static float2 EquirectUVFromCubeDirection(float3 v) {
 }
 
 [[fragment]]
-float4 fragment_environment(VertexOut in [[stage_in]],
+float4 fragment_stars(VertexOut in [[stage_in]],
                             texture2d<float> environmentTexture [[texture(0)]])
 {
     constexpr sampler environmentSampler(coord::normalized,

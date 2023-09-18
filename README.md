@@ -1,6 +1,6 @@
 # Spatial Metal 
-## rendering Metal in visionOS
+## rendering Metal shader for VisionOS
 
-This is a port of the C++ version provided by Warren Moore, [here](https://github.com/metal-by-example/metal-spatial-rendering)
+![Example screenshot of immersive metal](Screenshots/Screenshot.png)
 
-![Example screenshot of spatial rendering](screenshots/01.png)
+Port of C++ version by Warren Moore, [here](https://github.com/metal-by-example/metal-spatial-rendering)

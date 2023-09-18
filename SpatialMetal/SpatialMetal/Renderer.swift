@@ -6,33 +6,6 @@
 
 import Foundation
 
-import simd
-
-struct PoseConstants {
-    var projectionMatrix: simd_float4x4
-    var viewMatrix: simd_float4x4
-}
-
-struct InstanceConstants {
-    var modelMatrix: simd_float4x4
-}
-
-struct EnvironmentConstants {
-    var modelMatrix: simd_float4x4
-    var environmentRotation: simd_float4x4
-}
-
-// Convert double matrix to float matrix
-func matrix_float4x4_from_double4x4(_ m: simd_double4x4) -> simd_float4x4 {
-    return simd_float4x4(
-        simd_float4(Float(m.columns.0.x), Float(m.columns.0.y), Float(m.columns.0.z), Float(m.columns.0.w)),
-        simd_float4(Float(m.columns.1.x), Float(m.columns.1.y), Float(m.columns.1.z), Float(m.columns.1.w)),
-        simd_float4(Float(m.columns.2.x), Float(m.columns.2.y), Float(m.columns.2.z), Float(m.columns.2.w)),
-        simd_float4(Float(m.columns.3.x), Float(m.columns.3.y), Float(m.columns.3.z), Float(m.columns.3.w))
-    )
-}
-
-import Foundation
 import Metal
 import MetalKit
 import ARKit
@@ -41,7 +14,7 @@ import CompositorServices
 
 import Metal
 
-class SpatialRenderer {
+class Renderer {
     var device: MTLDevice
     var commandQueue: MTLCommandQueue
     var layerRenderer: LayerRenderer
@@ -52,7 +25,7 @@ class SpatialRenderer {
     var backgroundDepthStencilState: MTLDepthStencilState?
 
     var globeMesh: TexturedMesh?
-    var environmentMesh: SpatialEnvironmentMesh?
+    var environmentMesh: EnvironmentMesh?
     var sceneTime =  CFTimeInterval(0)
     var lastRenderTime =  CFTimeInterval(0)
 
@@ -65,10 +38,11 @@ class SpatialRenderer {
 
         makeResources()
 
-        makeRenderPipelines(layout: layerRenderer.configuration.layout)
+        makeRenderPipeline(layout: layerRenderer.configuration.layout)
     }
 
     func makeResources() {
+
         let bufferAllocator = MTKMeshBufferAllocator(device: device)
         let sphereMesh = MDLMesh.newEllipsoid(withRadii: SIMD3<Float>(0.5, 0.5, 0.5),
                                               radialSegments: 24,
@@ -77,10 +51,12 @@ class SpatialRenderer {
                                               inwardNormals: false,
                                               hemisphere: false,
                                               allocator: bufferAllocator)
-        try! globeMesh = TexturedMesh(mdlMesh: sphereMesh, imageName: "bluemarble.png", device: device)
-        try! environmentMesh = SpatialEnvironmentMesh(imageName: "studio.hdr", radius: 3.0, device: device)
+        try! globeMesh = TexturedMesh(mdlMesh: sphereMesh, imageName: "Earth.png", device: device)
+        // 8k_stars_milky_way.jpg from https://www.solarsystemscope.com/textures/ -- CC Atribution 4.0
+        try! environmentMesh = EnvironmentMesh(imageName: "Stars.jpg", radius: 3.0, device: device)
     }
-    func makeRenderPipelines(layout: LayerRenderer.Layout) {
+    
+    func makeRenderPipeline(layout: LayerRenderer.Layout) {
 
         var error: NSError?
         let layerConfiguration = layerRenderer.configuration
@@ -95,9 +71,10 @@ class SpatialRenderer {
         var vertexFunction: MTLFunction?
         var fragmentFunction: MTLFunction?
 
+        // earth.metal
         do {
-            vertexFunction = library.makeFunction(name: "vertex_main")
-            fragmentFunction = library.makeFunction(name: "fragment_main")
+            vertexFunction = library.makeFunction(name: "vertex_earth")
+            fragmentFunction = library.makeFunction(name: "fragment_earth")
             pipelineDescriptor.vertexFunction = vertexFunction
             pipelineDescriptor.fragmentFunction = fragmentFunction
             pipelineDescriptor.vertexDescriptor = globeMesh.vertexDescriptor()
@@ -107,9 +84,10 @@ class SpatialRenderer {
             err("_main \(error.debugDescription)")
         }
 
+        // stars.metal
         do {
-            vertexFunction = library.makeFunction(name: "vertex_environment")
-            fragmentFunction = library.makeFunction(name: "fragment_environment")
+            vertexFunction = library.makeFunction(name: "vertex_stars")
+            fragmentFunction = library.makeFunction(name: "fragment_stars")
             pipelineDescriptor.vertexFunction = vertexFunction
             pipelineDescriptor.fragmentFunction = fragmentFunction
             pipelineDescriptor.vertexDescriptor = environmentMesh.vertexDescriptor()
@@ -154,7 +132,6 @@ class SpatialRenderer {
         ])
         globeMesh.modelMatrix = modelTransform
         environmentMesh.modelMatrix = modelTransform
-
 
         let commandBuffer = commandQueue.makeCommandBuffer()!
 

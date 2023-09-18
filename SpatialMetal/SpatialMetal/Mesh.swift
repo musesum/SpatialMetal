@@ -41,6 +41,7 @@ class TexturedMesh: Mesh {
 
 
     override init() {}
+
     init(mdlMesh: MDLMesh, imageName: String, device: MTLDevice) throws {
         super.init()
         
@@ -87,7 +88,7 @@ class TexturedMesh: Mesh {
     }
 }
 
-class SpatialEnvironmentMesh: TexturedMesh {
+class EnvironmentMesh: TexturedMesh {
 
     var environmentRotation: matrix_float4x4 = matrix_identity_float4x4
 

@@ -5,6 +5,27 @@ import SwiftUI
 import ARKit
 import CompositorServices
 
+@main
+struct SpatialMetalApp: App {
+
+    @State var arSession = ARKitSession()
+    @State var worldTracking = WorldTrackingProvider()
+
+    init() {}
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+        ImmersiveSpace(id: "ImmersiveSpace") {
+            CompositorLayer(configuration: MetalLayerConfiguration()) { layerRenderer in
+
+                RenderThread(layerRenderer, arSession, worldTracking).start()
+            }
+        }.immersionStyle(selection: .constant(.full), in: .full)
+    }
+}
+
 struct MetalLayerConfiguration: CompositorLayerConfiguration {
     func makeConfiguration(capabilities: LayerRenderer.Capabilities,
                            configuration: inout LayerRenderer.Configuration)
@@ -16,22 +37,32 @@ struct MetalLayerConfiguration: CompositorLayerConfiguration {
     }
 }
 
-@main
-struct SpatialMetalApp: App {
+class RenderThread: Thread {
 
-    @State var session = ARKitSession()
-    @State var worldTracking = WorldTrackingProvider()
+    let layerRenderer: LayerRenderer
+    let arSession: ARKitSession
+    let worldTracking: WorldTrackingProvider
 
-    init() {}
+    init(_ layerRenderer: LayerRenderer,
+         _ arSession: ARKitSession,
+         _ worldTracking: WorldTrackingProvider) {
 
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        ImmersiveSpace(id: "ImmersiveSpace") {
-            CompositorLayer(configuration: MetalLayerConfiguration()) { layerRenderer in
-                SpatialRenderer_InitAndRun(layerRenderer, session, worldTracking)
-            }
-        }.immersionStyle(selection: .constant(.full), in: .full)
+        self.layerRenderer = layerRenderer
+        self.arSession = arSession
+        self.worldTracking = worldTracking
+
+        super.init()
+        self.name = "Render Thread"
     }
+
+    override func main() {
+        Task {
+            let engine = await RenderEngine(layerRenderer,
+                                            arSession,
+                                            worldTracking)
+            engine.runLoop()
+        }
+    }
+
 }
+

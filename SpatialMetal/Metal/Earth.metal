@@ -24,7 +24,7 @@ struct InstanceConstants {
 };
 
 [[vertex]]
-VertexOut vertex_main(VertexIn in [[stage_in]],
+VertexOut vertex_earth(VertexIn in [[stage_in]],
                              constant PoseConstants &pose [[buffer(1)]],
                              constant InstanceConstants &instance [[buffer(2)]])
 {
@@ -37,7 +37,7 @@ VertexOut vertex_main(VertexIn in [[stage_in]],
 }
 
 [[fragment]]
-float4 fragment_main(VertexOut in [[stage_in]],
+float4 fragment_earth(VertexOut in [[stage_in]],
                             texture2d<float> texture [[texture(0)]])
 {
     constexpr sampler environmentSampler(coord::normalized,
